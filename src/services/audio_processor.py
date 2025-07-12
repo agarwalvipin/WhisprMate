@@ -18,7 +18,7 @@ from ..core.models import (
 class AudioProcessorService(AudioProcessorInterface):
     """Service for processing audio files with speaker diarization."""
 
-    def __init__(self, diarize_script_path: str = "diarize_cli_improved.py"):
+    def __init__(self, diarize_script_path: str = "scripts/diarize_cli_improved.py"):
         """Initialize the audio processor service.
 
         Args:
@@ -100,6 +100,8 @@ class AudioProcessorService(AudioProcessorInterface):
         Returns:
             Tuple of (success, message)
         """
+        import os
+        
         try:
             cmd = [
                 "python",
@@ -116,6 +118,11 @@ class AudioProcessorService(AudioProcessorInterface):
 
             if not options.enable_diarization:
                 cmd.append("--no-diarization")
+            else:
+                # Check if HF_TOKEN is available, if not use simulation mode
+                hf_token = os.getenv("HF_TOKEN")
+                if not hf_token:
+                    cmd.append("--simulate-diarization")
 
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
             return True, result.stdout

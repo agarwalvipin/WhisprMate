@@ -2,7 +2,26 @@
 
 A clean, modern tool for audio transcription with speaker identification and interactive playback.
 
-## 🚀 Quick Start
+## � Prerequisites
+
+### HuggingFace Token (Recommended for Real Speaker Diarization)
+
+For accurate speaker diarization, you need a HuggingFace token:
+
+1. **Create Account**: Sign up at [HuggingFace](https://huggingface.co/)
+2. **Get Token**: Visit [Settings > Access Tokens](https://huggingface.co/settings/tokens)
+3. **Accept License**: Go to [pyannote/speaker-diarization-3.1](https://huggingface.co/pyannote/speaker-diarization-3.1) and accept the user agreement
+4. **Set Environment Variable**: 
+   ```bash
+   # Create .env file
+   cp .env.example .env
+   # Edit .env and add your token:
+   HF_TOKEN=your_actual_token_here
+   ```
+
+**Note**: Without a token, the application will automatically use simulation mode for demonstration purposes.
+
+## �🚀 Quick Start
 
 ### Option 1: Web Interface (Streamlit)
 
@@ -59,13 +78,21 @@ For detailed authentication setup, see [docs/AUTHENTICATION.md](docs/AUTHENTICAT
 
 ```
 WhisprMate/
-├── diarize_cli_improved.py    # Main CLI tool for diarization
-├── player.html               # Web player with dialog UI
-├── real_diarized_output.srt  # Example output with real speakers
-├── Reading 29...wav          # Sample audio file
-├── .env                      # HuggingFace token (required)
-├── summary.md               # Detailed project documentation
-└── venv/                    # Python virtual environment
+├── scripts/
+│   └── diarize_cli_improved.py    # Main CLI tool for diarization
+├── static/
+│   └── player.html               # Web player with dialog UI
+├── src/                          # Source code modules
+│   ├── core/                     # Core models and interfaces
+│   ├── services/                 # Business logic services
+│   ├── ui/                       # UI components
+│   └── utils/                    # Utility functions
+├── docs/                         # Comprehensive documentation
+├── tests/                        # Unit and integration tests
+├── main.py                       # Streamlit web application
+├── requirements.txt              # Python dependencies
+├── Dockerfile                    # Docker container configuration
+└── docker-compose.yml           # Docker compose configuration
 ```
 
 ## ✨ Features
@@ -78,9 +105,10 @@ WhisprMate/
 
 ## 🔧 Requirements
 
-- Python virtual environment (`venv/`)
-- HuggingFace token in `.env` file
+- Python 3.11+ environment
 - Audio file (WAV/MP3)
+- **Optional**: HuggingFace token for real speaker diarization (simulation mode available without token)
+- **Docker** (for containerized deployment)
 
 ## 📖 Documentation
 

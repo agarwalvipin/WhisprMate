@@ -4,7 +4,7 @@
 
 set -e
 
-IMAGE_NAME="WhisprMate"
+IMAGE_NAME="whisprmate"
 TAG="${1:-latest}"
 
 echo "🔨 Building Docker image: $IMAGE_NAME:$TAG"
