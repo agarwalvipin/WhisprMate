@@ -1,0 +1,31 @@
+[project]
+name = "speaker-diarization-app"
+version = "0.1.0"
+description = "A modern Streamlit web app for audio transcription and speaker diarization."
+authors = ["vipin"]
+license = "MIT"
+readme = "README.md"
+requires-python = ">=3.8"
+
+[project.urls]
+Homepage = "https://github.com/vipin/speaker-diarization-app"
+
+[tool.uv]
+# uv configuration placeholder
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = true
+
+[build-system]
+requires = ["uv", "setuptools", "wheel"]
+build-backend = "setuptools.build_meta"

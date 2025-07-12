@@ -40,6 +40,16 @@ notta/
 - HuggingFace token in `.env` file
 - Audio file (WAV/MP3)
 
----
+## 📖 Documentation
 
-For detailed documentation, see [`summary.md`](summary.md)
+This project includes comprehensive documentation organized in the [`docs/`](docs/) directory:
+
+- **📋 [Project Overview](docs/project/summary.md)** - Detailed project documentation and features
+- **🏗️ [Architecture](docs/architecture/ARCHITECTURE.md)** - Technical architecture and design principles
+- **💻 [Contributing](docs/development/CONTRIBUTING.md)** - How to contribute to the project
+- **📅 [Development Plan](docs/project/plan.md)** - Roadmap and planned enhancements
+- **🎨 [UI Improvements](docs/project/UI_IMPROVEMENTS.md)** - UI/UX design documentation
+
+For a complete documentation index, see [`docs/README.md`](docs/README.md)
+
+---

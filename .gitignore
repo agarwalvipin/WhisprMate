@@ -1,27 +1,33 @@
 # Python
-venv/
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+.venv/
+venv/
+env/
+*.env
 
-# Environment
-.env
-
-# Audio and large files
+#audio files
 *.wav
-*.mp3
-*.flac
+
+# Streamlit
+uploads/
+*.srt
+
+# System
+.DS_Store
+Thumbs.db
 
 # VSCode
 .vscode/
 
-# OS files
-.DS_Store
-Thumbs.db
-
 # Logs
 *.log
 
-# Node
-node_modules/
+# Test/coverage
+.coverage
+htmlcov/
+.tox/
+.cache/
+.pytest_cache/
