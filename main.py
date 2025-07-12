@@ -274,27 +274,14 @@ class SpeakerDiarizationApp:
         with col2:
             st.title(f"🎵 {player_file}")
 
-        # Audio player
-        with open(audio_file.path, "rb") as f:
-            audio_bytes = f.read()
-
-        st.audio(
-            audio_bytes, format="audio/wav" if player_file.lower().endswith(".wav") else "audio/mp3"
-        )
-
-        # Transcript section
+        # Check if transcript exists
         if self.transcript_manager.transcript_exists(audio_file):
             transcript = self.transcript_manager.load_transcript(audio_file)
             if transcript:
-                st.subheader("📄 Transcript")
-                st.text_area(
-                    "Transcript Content",
-                    transcript,
-                    height=300,
-                    disabled=True,
-                    label_visibility="collapsed",
-                )
+                # Create interactive audio player with transcript
+                self._render_interactive_player(audio_file, transcript)
 
+                # Download button for transcript
                 st.download_button(
                     "📄 Download Transcript",
                     transcript,
@@ -303,6 +290,323 @@ class SpeakerDiarizationApp:
                 )
         else:
             st.warning("⚠️ Transcript not available. Please process this file first.")
+
+    def _render_interactive_player(self, audio_file, transcript: str) -> None:
+        """Render the interactive audio player with transcript dialog."""
+        import base64
+
+        from src.utils.helpers import get_audio_mime_type
+
+        # Read and encode audio file
+        with open(audio_file.path, "rb") as f:
+            audio_bytes = f.read()
+
+        audio_base64 = base64.b64encode(audio_bytes).decode()
+        audio_mime = get_audio_mime_type(audio_file.name)
+
+        # Escape transcript content for JavaScript
+        transcript_escaped = (
+            transcript.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
+        )
+
+        # Create the interactive player HTML
+        player_html = (
+            f"""
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <title>Audio Player with Transcript</title>
+          <style>
+            body {{
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              margin: 0;
+              background-color: #ffffff;
+              padding: 10px;
+            }}
+            .player-container {{
+              background: white;
+              border-radius: 8px;
+              padding: 0;
+              margin-bottom: 10px;
+              border: 1px solid #e0e0e0;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+              overflow: visible;
+              min-height: 80px;
+            }}
+            #transcript {{
+              max-height: 600px;
+              overflow-y: auto;
+              background: white;
+              padding: 0;
+              margin: 0;
+            }}
+            .dialog {{
+              display: flex;
+              align-items: flex-start;
+              margin: 0;
+              padding: 12px 16px;
+              gap: 12px;
+              border-bottom: 1px solid #f0f0f0;
+            }}
+            .dialog:last-child {{
+              border-bottom: none;
+            }}
+            .timestamp {{
+              font-size: 11px;
+              color: #666;
+              min-width: 35px;
+              margin-top: 2px;
+              font-weight: 500;
+            }}
+            .speaker-avatar {{
+              width: 20px;
+              height: 20px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: white;
+              font-weight: bold;
+              font-size: 9px;
+              flex-shrink: 0;
+              margin-top: 0px;
+            }}
+            .speaker-0 .speaker-avatar {{ background-color: #4A90E2; }}
+            .speaker-1 .speaker-avatar {{ background-color: #E24A4A; }}
+            .content {{
+              flex: 1;
+              margin-left: 6px;
+            }}
+            .speaker-name {{
+              font-weight: 600;
+              font-size: 13px;
+              color: #333;
+              margin-bottom: 2px;
+            }}
+            .speaker-0 .speaker-name {{ color: #4A90E2; }}
+            .speaker-1 .speaker-name {{ color: #E24A4A; }}
+            .text {{
+              color: #333;
+              line-height: 1.4;
+              font-size: 13px;
+              margin: 0;
+            }}
+            .active {{
+              background-color: #E3F2FD;
+              border-left: 3px solid #2196F3;
+            }}
+            audio {{
+              width: 100%;
+              height: auto;
+              min-height: 54px;
+              margin: 0;
+              padding: 8px;
+              border-radius: 8px 8px 0 0;
+              outline: none;
+              display: block;
+              background: #f8f9fa;
+            }}
+            audio::-webkit-media-controls-panel {{
+              background-color: #f8f9fa;
+              border-radius: 8px 8px 0 0;
+            }}
+            audio::-webkit-media-controls-enclosure {{
+              background-color: #f8f9fa;
+              border-radius: 8px 8px 0 0;
+            }}
+            .progress-container {{
+              background: #f5f5f5;
+              padding: 8px 16px;
+              border-top: 1px solid #e0e0e0;
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              font-size: 12px;
+              color: #666;
+            }}
+            .time-display {{
+              font-family: monospace;
+              font-size: 11px;
+            }}
+          </style>
+        </head>
+        <body>
+          <div class="player-container">
+            <audio id="audio" controls preload="metadata">
+              <source src="data:{audio_mime};base64,{audio_base64}" type="{audio_mime}">
+              Your browser does not support the audio element.
+            </audio>
+            <div class="progress-container">
+              <span class="time-display" id="current-time">00:00</span>
+              <span>/</span>
+              <span class="time-display" id="total-time">00:00</span>
+            </div>
+          </div>
+          <div id="transcript"></div>
+          <script>
+            function parseSRT(data) {{
+              const srt = [];
+              const regex = /(\\d+)\\s+(\\d{{2}}:\\d{{2}}:\\d{{2}},\\d{{3}})\\s-->\\s+"""
+            + f"""(\\d{{2}}:\\d{{2}}:\\d{{2}},\\d{{3}})\\s+([\\s\\S]*?)(?=\\n{{2,}}|$)/g;
+              let match;
+              while ((match = regex.exec(data)) !== null) {{
+                let text = match[4].replace(/\\n/g, ' ');
+                let speaker = "SPEAKER";
+                const speakerMatch = text.match(/^(SPEAKER_\\d+):\\s*/);
+                if (speakerMatch) {{
+                  speaker = speakerMatch[1];
+                  text = text.replace(/^(SPEAKER_\\d+):\\s*/, "");
+                }}
+                srt.push({{
+                  index: parseInt(match[1]),
+                  start: toSeconds(match[2]),
+                  end: toSeconds(match[3]),
+                  speaker,
+                  text
+                }});
+              }}
+              return srt;
+            }}
+            function toSeconds(time) {{
+              const [h, m, s] = time.replace(',', ':').split(':').map(Number);
+              return h * 3600 + m * 60 + s;
+            }}
+
+            // Parse the transcript data
+            const srtText = "{transcript_escaped}";
+            const cues = parseSRT(srtText);
+            const transcriptDiv = document.getElementById('transcript');
+
+            // Group consecutive segments by speaker
+            const groupedCues = [];
+            let currentGroup = null;
+
+            cues.forEach((cue, i) => {{
+              if (!currentGroup || currentGroup.speaker !== cue.speaker) {{
+                // Start a new group
+                currentGroup = {{
+                  speaker: cue.speaker,
+                  start: cue.start,
+                  end: cue.end,
+                  texts: [cue.text],
+                  originalIndices: [i]
+                }};
+                groupedCues.push(currentGroup);
+              }} else {{
+                // Add to existing group
+                currentGroup.end = cue.end;
+                currentGroup.texts.push(cue.text);
+                currentGroup.originalIndices.push(i);
+              }}
+            }});
+
+            // Render grouped dialogs
+            groupedCues.forEach((group, groupIndex) => {{
+              const div = document.createElement('div');
+              div.className = 'dialog speaker-' + (group.speaker.endsWith("0") ? "0" : "1");
+              div.id = 'group-' + groupIndex;
+              div.dataset.originalIndices = group.originalIndices.join(',');
+
+              // Format time for display
+              const formatTime = (seconds) => {{
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${{mins.toString().padStart(2, '0')}}:${{secs.toString().padStart(2, '0')}}`;
+              }};
+
+              // Determine speaker number and name
+              const speakerNum = group.speaker.endsWith("0") ? "1" : "2";
+              const speakerName = `Speaker ${{speakerNum}}`;
+
+              // Combine texts with paragraph breaks
+              const combinedText = group.texts.map(text => `<p style="margin: 0 0 8px 0; line-height: 1.4;">${{text}}</p>`).join('');
+
+              div.innerHTML = `
+                <span class="timestamp">${{formatTime(group.start)}}</span>
+                <div class="speaker-avatar">${{speakerNum}}</div>
+                <div class="content">
+                  <div class="speaker-name">${{speakerName}}</div>
+                  <div class="text">${{combinedText}}</div>
+                </div>
+              `;
+              transcriptDiv.appendChild(div);
+            }});
+
+            // Audio time update handler
+            const audio = document.getElementById('audio');
+            const currentTimeDisplay = document.getElementById('current-time');
+            const totalTimeDisplay = document.getElementById('total-time');
+            
+            // Variables to track user interaction with scroll
+            let userIsScrolling = false;
+            let scrollTimeout;
+            let lastActiveElement = null;
+            
+            // Format time for display
+            const formatTimeDisplay = (seconds) => {{
+              const mins = Math.floor(seconds / 60);
+              const secs = Math.floor(seconds % 60);
+              return `${{mins.toString().padStart(2, '0')}}:${{secs.toString().padStart(2, '0')}}`;
+            }};
+            
+            // Update duration when metadata loads
+            audio.addEventListener('loadedmetadata', () => {{
+              totalTimeDisplay.textContent = formatTimeDisplay(audio.duration);
+            }});
+            
+            // Detect user scrolling
+            transcriptDiv.addEventListener('scroll', () => {{
+              userIsScrolling = true;
+              clearTimeout(scrollTimeout);
+              // Reset user scrolling flag after 3 seconds of no scrolling
+              scrollTimeout = setTimeout(() => {{
+                userIsScrolling = false;
+              }}, 3000);
+            }});
+            
+            audio.ontimeupdate = () => {{
+              // Update time display
+              currentTimeDisplay.textContent = formatTimeDisplay(audio.currentTime);
+              
+              // Update active transcript segment
+              groupedCues.forEach((group, groupIndex) => {{
+                const div = document.getElementById('group-' + groupIndex);
+                if (audio.currentTime >= group.start && audio.currentTime <= group.end) {{
+                  div.classList.add('active');
+                  
+                  // Only auto-scroll if user is not manually scrolling
+                  // and this is a new active element
+                  if (!userIsScrolling && div !== lastActiveElement) {{
+                    div.scrollIntoView({{ 
+                      block: 'nearest', 
+                      behavior: 'smooth',
+                      inline: 'nearest'
+                    }});
+                    lastActiveElement = div;
+                  }}
+                }} else {{
+                  div.classList.remove('active');
+                }}
+              }});
+            }};
+            
+            // Click to seek functionality for grouped dialogs
+            groupedCues.forEach((group, groupIndex) => {{
+              const div = document.getElementById('group-' + groupIndex);
+              div.style.cursor = 'pointer';
+              div.addEventListener('click', () => {{
+                audio.currentTime = group.start;
+              }});
+            }});
+          </script>
+        </body>
+        </html>
+        """
+        )
+
+        # Display the interactive player
+        st.components.v1.html(player_html, height=700, scrolling=True)
 
 
 def main():
