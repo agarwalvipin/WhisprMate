@@ -52,6 +52,49 @@ docker run -p 8501:8501 -v $(pwd)/uploads:/app/uploads WhisprMate
 
 Then access the application at http://localhost:8501
 
+#### 📁 Custom Upload Directories
+
+Map uploads to custom host directories for persistent storage:
+
+```bash
+# Using environment variables
+UPLOADS_HOST_PATH=/home/user/whisprmate/uploads \
+LOGS_HOST_PATH=/home/user/whisprmate/logs \
+./scripts/deploy.sh
+
+# Direct Docker run with custom paths
+docker run -p 8501:8501 \
+  -v /custom/uploads:/app/uploads \
+  -v /custom/logs:/app/logs \
+  -e UPLOADS_HOST_PATH=/custom/uploads \
+  -e LOG_LEVEL=DEBUG \
+  whisprmate
+
+# Docker Compose with custom paths
+UPLOADS_HOST_PATH=/shared/storage/uploads \
+LOGS_HOST_PATH=/shared/storage/logs \
+docker-compose up -d
+
+# Network storage example (NFS/SMB)
+UPLOADS_HOST_PATH=/mnt/network-storage/whisprmate/uploads \
+LOGS_HOST_PATH=/mnt/network-storage/whisprmate/logs \
+./scripts/deploy.sh
+```
+
+Use `./scripts/deploy_examples.sh` for interactive deployment with custom paths.
+
+#### 🧪 Testing Docker Setup
+
+Validate your Docker deployment with the comprehensive test suite:
+
+```bash
+# Test volume mapping and all functionality
+./scripts/test_volume_mapping.sh
+
+# Interactive deployment guide
+./scripts/deploy_examples.sh
+```
+
 ### Option 3: Command Line Interface
 
 1. **Run Speaker Diarization:**
@@ -74,7 +117,58 @@ The web application includes a login system with configurable credentials:
 
 For detailed authentication setup, see [docs/AUTHENTICATION.md](docs/AUTHENTICATION.md).
 
-## 📁 Project Structure
+## 🔧 Debugging & Logging
+
+The application includes a comprehensive logging system for debugging and monitoring:
+
+### Log Levels
+- **DEBUG**: Detailed information for debugging (file operations, processing steps)
+- **INFO**: General application flow (default) 
+- **WARNING**: Warning messages and fallbacks (missing tokens, simulation mode)
+- **ERROR**: Error conditions and failures
+
+### Log Configuration
+
+The logging system automatically creates timestamped log files and supports multiple output destinations:
+
+```bash
+# Environment Variables
+LOG_LEVEL=DEBUG          # Set logging level
+LOGS_HOST_PATH=/path/to/logs  # Custom log directory (Docker)
+
+# Usage Examples
+LOG_LEVEL=DEBUG streamlit run main.py                    # Debug mode
+LOG_LEVEL=INFO streamlit run main.py                     # Production mode
+LOGS_HOST_PATH=/var/logs/whisprmate ./scripts/deploy.sh  # Custom log path
+```
+
+### Log Files Structure
+- **Application logs**: `logs/whisprmate_YYYYMMDD_HHMMSS.log` (timestamped)
+- **Error logs**: `logs/errors.log` (error-specific entries)
+- **Console output**: Real-time logging to terminal
+- **Service logs**: Component-specific logging (auth, audio processing, file management)
+
+### Docker Logging
+
+```bash
+# Standard logging
+docker run -p 8501:8501 -e LOG_LEVEL=DEBUG -v $(pwd)/logs:/app/logs whisprmate
+
+# Custom log directory
+docker run -p 8501:8501 \
+  -e LOG_LEVEL=DEBUG \
+  -e LOGS_HOST_PATH=/custom/logs \
+  -v /custom/logs:/app/logs \
+  whisprmate
+
+# View container logs
+docker logs whisprmate-container-name
+
+# Test volume mapping and logging
+./scripts/test_volume_mapping.sh
+```
+
+## �📁 Project Structure
 
 ```
 WhisprMate/

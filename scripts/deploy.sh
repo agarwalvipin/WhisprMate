@@ -14,8 +14,17 @@ CONTAINER_PORT="8501"
 DEFAULT_USERNAME="${STREAMLIT_USERNAME:-admin}"
 DEFAULT_PASSWORD="${STREAMLIT_PASSWORD:-admin}"
 
+# Directory configuration with environment variable support
+UPLOADS_HOST_PATH="${UPLOADS_HOST_PATH:-$(pwd)/uploads}"
+LOGS_HOST_PATH="${LOGS_HOST_PATH:-$(pwd)/logs}"
+DATA_HOST_PATH="${DATA_HOST_PATH:-$(pwd)/data}"
+
 echo "🐳 Building and deploying Speaker Diarization App with Docker"
 echo "=================================================="
+echo "📁 Host uploads directory: $UPLOADS_HOST_PATH"
+echo "📄 Host logs directory: $LOGS_HOST_PATH"
+echo "📊 Host data directory: $DATA_HOST_PATH"
+echo "🔑 Username: $DEFAULT_USERNAME"
 
 # Function to check if container is running
 check_container() {
@@ -46,18 +55,23 @@ docker build -t "$IMAGE_NAME" .
 # Stop and remove existing container if it exists
 cleanup_container
 
-# Create uploads directory if it doesn't exist
-mkdir -p uploads data/samples
+# Create directories if they don't exist
+echo "📁 Creating host directories..."
+mkdir -p "$UPLOADS_HOST_PATH" "$LOGS_HOST_PATH" "$DATA_HOST_PATH/samples"
 
 # Run the container
 echo "🚀 Starting container..."
 docker run -d \
     --name "$CONTAINER_NAME" \
     -p "$HOST_PORT:$CONTAINER_PORT" \
-    -v "$(pwd)/uploads:/app/uploads" \
-    -v "$(pwd)/data:/app/data" \
+    -v "$UPLOADS_HOST_PATH:/app/uploads" \
+    -v "$LOGS_HOST_PATH:/app/logs" \
+    -v "$DATA_HOST_PATH:/app/data" \
     -e STREAMLIT_USERNAME="$DEFAULT_USERNAME" \
     -e STREAMLIT_PASSWORD="$DEFAULT_PASSWORD" \
+    -e UPLOADS_HOST_PATH="$UPLOADS_HOST_PATH" \
+    -e LOG_LEVEL="${LOG_LEVEL:-INFO}" \
+    -e HF_TOKEN="${HF_TOKEN:-}" \
     $([ -f .env ] && echo "-v $(pwd)/.env:/app/.env:ro") \
     "$IMAGE_NAME" \
     streamlit run main.py \
@@ -78,6 +92,11 @@ echo "  Image: $IMAGE_NAME"
 echo "  Port: http://localhost:$HOST_PORT"
 echo "  Username: $DEFAULT_USERNAME"
 echo "  Password: $DEFAULT_PASSWORD"
+echo ""
+echo "📁 Volume Mappings:"
+echo "  Uploads: $UPLOADS_HOST_PATH -> /app/uploads"
+echo "  Logs: $LOGS_HOST_PATH -> /app/logs" 
+echo "  Data: $DATA_HOST_PATH -> /app/data"
 echo ""
 echo "🔍 Useful commands:"
 echo "  View logs: docker logs $CONTAINER_NAME"

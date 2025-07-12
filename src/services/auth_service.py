@@ -2,7 +2,11 @@
 
 import streamlit as st
 
+from config.logging_config import get_logger
+
 from ..core.models import AuthenticationInterface
+
+logger = get_logger("auth")
 
 
 class AuthenticationService(AuthenticationInterface):
@@ -12,7 +16,7 @@ class AuthenticationService(AuthenticationInterface):
         self,
         enable_auth: bool = False,
         default_username: str = "admin",
-        default_password: str = "admin"
+        default_password: str = "admin",
     ):
         """Initialize authentication service.
 
@@ -24,6 +28,10 @@ class AuthenticationService(AuthenticationInterface):
         self.enable_auth = enable_auth
         self.default_username = default_username
         self.default_password = default_password
+        logger.info(
+            f"AuthenticationService initialized: enabled={enable_auth}, username={default_username}"
+        )
+        logger.debug(f"Authentication settings: enable_auth={enable_auth}")
 
     def is_authenticated(self) -> bool:
         """Check if user is authenticated.
@@ -46,18 +54,23 @@ class AuthenticationService(AuthenticationInterface):
         Returns:
             True if login successful
         """
+        logger.debug(f"Login attempt for username: {username}")
+
         # Simple demo authentication - in production, use proper auth
         if not self.enable_auth:
+            logger.info("Authentication disabled, auto-login")
             st.session_state["authenticated"] = True
             st.session_state["username"] = username or "user"
             return True
 
         # Check against default credentials
         if username == self.default_username and password == self.default_password:
+            logger.info(f"Successful login for user: {username}")
             st.session_state["authenticated"] = True
             st.session_state["username"] = username
             return True
 
+        logger.warning(f"Failed login attempt for username: {username}")
         return False
 
     def logout(self) -> None:

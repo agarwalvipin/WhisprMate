@@ -33,9 +33,26 @@ Project planning, roadmaps, and feature documentation.
 - **Project Structure**: [Directory Organization](./PROJECT_STRUCTURE.md)
 - **Authentication Setup**: [Authentication Guide](./AUTHENTICATION.md)
 - **Docker Deployment**: [Docker Guide](./DOCKER_DEPLOYMENT.md)
+- **Volume Mapping**: [Docker Volume Mapping Guide](./VOLUME_MAPPING.md)
+- **Logging System**: [Logging Documentation](./LOGGING.md)
 - **Development Guidelines**: [Coding Standards](./development/DEVELOPMENT_GUIDELINES.md)
 - **Contributing**: [Contributing Guidelines](./development/CONTRIBUTING.md)
 - **Project Roadmap**: [Development Plan](./project/plan.md)
+
+## 🔧 Deployment & Operations
+
+- **[DOCKER_DEPLOYMENT.md](./DOCKER_DEPLOYMENT.md)** - Comprehensive Docker deployment guide
+- **[VOLUME_MAPPING.md](./VOLUME_MAPPING.md)** - Docker volume mapping and persistent storage
+- **[LOGGING.md](./LOGGING.md)** - Logging system configuration and usage
+- **[AUTHENTICATION.md](./AUTHENTICATION.md)** - Authentication setup and security
+
+## 🧪 Testing & Validation
+
+Available testing scripts and validation procedures:
+
+- **Volume Mapping Tests**: `./scripts/test_volume_mapping.sh`
+- **Interactive Deployment**: `./scripts/deploy_examples.sh` 
+- **Docker Validation**: `./scripts/validate-docker.sh`
 
 ## 📁 File Organization
 

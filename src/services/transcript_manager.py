@@ -3,7 +3,11 @@
 from pathlib import Path
 from typing import Optional
 
+from config.logging_config import get_logger
+
 from ..core.models import AudioFile, ProcessingResult, TranscriptManagerInterface
+
+logger = get_logger("transcript")
 
 
 class TranscriptManagerService(TranscriptManagerInterface):
@@ -20,11 +24,17 @@ class TranscriptManagerService(TranscriptManagerInterface):
             Path to saved transcript file
         """
         srt_path = audio_file.path.with_suffix(audio_file.path.suffix + ".srt")
+        logger.info(f"Saving transcript for {audio_file.name} to {srt_path}")
 
-        with open(srt_path, "w", encoding="utf-8") as f:
-            f.write(result.srt_content)
+        try:
+            with open(srt_path, "w", encoding="utf-8") as f:
+                f.write(result.srt_content)
 
-        return srt_path
+            logger.debug(f"Transcript saved successfully: {srt_path}")
+            return srt_path
+        except Exception as e:
+            logger.error(f"Failed to save transcript to {srt_path}: {str(e)}")
+            raise
 
     def load_transcript(self, audio_file: AudioFile) -> Optional[str]:
         """Load transcript content if it exists.

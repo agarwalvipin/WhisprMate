@@ -41,11 +41,16 @@ docker run -d \
 
 ### Environment Variables
 
-| Variable             | Default | Description                               |
-| -------------------- | ------- | ----------------------------------------- |
-| `STREAMLIT_USERNAME` | `admin` | Default login username                    |
-| `STREAMLIT_PASSWORD` | `admin` | Default login password                    |
-| `HF_TOKEN`           | -       | HuggingFace token for speaker diarization |
+| Variable              | Default | Description                                      |
+| --------------------- | ------- | ------------------------------------------------ |
+| `STREAMLIT_USERNAME`  | `admin` | Default login username                           |
+| `STREAMLIT_PASSWORD`  | `admin` | Default login password                           |
+| `HF_TOKEN`            | -       | HuggingFace token for speaker diarization        |
+| `LOG_LEVEL`           | `INFO`  | Logging level (DEBUG, INFO, WARNING, ERROR)     |
+| `UPLOADS_HOST_PATH`   | -       | Custom host directory path for uploads mapping  |
+| `LOGS_HOST_PATH`      | -       | Custom host directory path for logs mapping     |
+| `UPLOADS_DIR`         | -       | Container uploads directory override             |
+| `LOG_FILE`            | -       | Custom log file path                             |
 
 ### Ports
 
@@ -53,9 +58,90 @@ docker run -d \
 
 ### Volumes
 
-- `/app/uploads`: User uploaded audio files
+- `/app/uploads`: User uploaded audio files (configurable via UPLOADS_HOST_PATH)
+- `/app/logs`: Application and error logs (configurable via LOGS_HOST_PATH)
 - `/app/data`: Sample data and outputs
 - `/app/.env`: Environment variables file (optional)
+
+## 🚀 Volume Mapping & Persistent Storage
+
+### Custom Upload Directories
+
+Map uploads to custom host directories for persistent storage:
+
+```bash
+# Basic volume mapping
+docker run -p 8501:8501 \
+  -v /custom/uploads:/app/uploads \
+  -v /custom/logs:/app/logs \
+  whisprmate
+
+# Using environment variables
+docker run -p 8501:8501 \
+  -e UPLOADS_HOST_PATH=/custom/uploads \
+  -e LOGS_HOST_PATH=/custom/logs \
+  -v /custom/uploads:/app/uploads \
+  -v /custom/logs:/app/logs \
+  whisprmate
+
+# Network storage example (NFS/SMB)
+docker run -p 8501:8501 \
+  -e UPLOADS_HOST_PATH=/mnt/network-storage/uploads \
+  -e LOGS_HOST_PATH=/mnt/network-storage/logs \
+  -v /mnt/network-storage/uploads:/app/uploads \
+  -v /mnt/network-storage/logs:/app/logs \
+  whisprmate
+```
+
+### Docker Compose with Custom Paths
+
+```bash
+# Set environment variables before running
+export UPLOADS_HOST_PATH=/shared/storage/uploads
+export LOGS_HOST_PATH=/shared/storage/logs
+docker-compose up -d
+
+# Or inline
+UPLOADS_HOST_PATH=/custom/path LOGS_HOST_PATH=/custom/logs docker-compose up -d
+```
+
+### Testing Volume Mapping
+
+Use the provided test script to verify volume mapping:
+
+```bash
+# Run comprehensive volume mapping tests
+./scripts/test_volume_mapping.sh
+
+# Interactive deployment examples
+./scripts/deploy_examples.sh
+```
+
+## 🔧 Logging Configuration
+
+### Logging Levels
+
+The application supports multiple logging levels for debugging and monitoring:
+
+```bash
+# Debug mode with detailed logging
+docker run -p 8501:8501 \
+  -e LOG_LEVEL=DEBUG \
+  -v $(pwd)/logs:/app/logs \
+  whisprmate
+
+# Production mode with info logging
+docker run -p 8501:8501 \
+  -e LOG_LEVEL=INFO \
+  -v /var/logs/whisprmate:/app/logs \
+  whisprmate
+```
+
+### Log File Structure
+
+- **Application logs**: `logs/whisprmate_YYYYMMDD_HHMMSS.log`
+- **Error logs**: `logs/errors.log`
+- **Service logs**: Component-specific logging for auth, audio processing, file management
 
 ## 🚀 Deployment Options
 
@@ -311,6 +397,94 @@ docker cp WhisprMate:/app/uploads ./backup-uploads
 
 # Restore uploads directory
 docker cp ./backup-uploads WhisprMate:/app/uploads
+```
+
+## 🧪 Testing & Validation
+
+### Volume Mapping Tests
+
+Use the comprehensive test script to validate your Docker setup:
+
+```bash
+# Run all volume mapping tests
+./scripts/test_volume_mapping.sh
+
+# Test Output Example:
+# 🧪 WhisprMate Docker Volume Mapping Test
+# ==============================================
+# ✅ Container is running
+# ✅ Application is accessible on port 8503
+# ✅ Host-created file visible in container
+# ✅ Container-created file visible on host
+# ✅ Environment variables set correctly
+# ✅ Directory permissions are correct
+# ✅ Application configuration is valid
+# ✅ Files persist across container restarts
+```
+
+### Interactive Deployment
+
+Use the interactive deployment script for guided setup:
+
+```bash
+# Run interactive deployment with examples
+./scripts/deploy_examples.sh
+
+# Provides scenarios for:
+# 1. Basic development setup
+# 2. Production deployment
+# 3. Network storage integration
+# 4. Custom directory mapping
+# 5. Multi-environment configurations
+```
+
+### Manual Testing
+
+```bash
+# Test file creation from host
+echo "test from host" > uploads/host_test.txt
+docker exec container_name cat /app/uploads/host_test.txt
+
+# Test file creation from container
+docker exec container_name sh -c "echo 'test from container' > /app/uploads/container_test.txt"
+cat uploads/container_test.txt
+
+# Test logging
+docker exec container_name python -c "
+from config.logging_config import get_logger
+logger = get_logger('test')
+logger.info('Test log message')
+"
+cat logs/whisprmate_*.log | tail -5
+```
+
+## 📁 Script Reference
+
+### Available Scripts
+
+- **`./scripts/test_volume_mapping.sh`** - Comprehensive volume mapping validation
+- **`./scripts/deploy_examples.sh`** - Interactive deployment scenarios  
+- **`./scripts/deploy.sh`** - Standard deployment script
+- **`./scripts/build.sh`** - Image building script
+- **`./scripts/validate-docker.sh`** - Setup validation
+
+### Script Usage Examples
+
+```bash
+# Quick validation
+./scripts/validate-docker.sh
+
+# Standard deployment
+./scripts/deploy.sh
+
+# Custom deployment with paths
+UPLOADS_HOST_PATH=/data/uploads LOGS_HOST_PATH=/data/logs ./scripts/deploy.sh
+
+# Interactive guided setup
+./scripts/deploy_examples.sh
+
+# Comprehensive testing
+./scripts/test_volume_mapping.sh
 ```
 
 ---

@@ -8,8 +8,11 @@ The Speaker Diarization App has been successfully containerized with the followi
 
 - **`Dockerfile`** - Multi-stage container configuration
 - **`.dockerignore`** - Excludes unnecessary files from build context
+- **`docker-compose.yml`** - Complete orchestration with volume mapping
 - **`scripts/build.sh`** - Simple image building script
 - **`scripts/deploy.sh`** - Complete deployment script with volumes
+- **`scripts/deploy_examples.sh`** - Interactive deployment scenarios
+- **`scripts/test_volume_mapping.sh`** - Comprehensive volume mapping tests
 - **`scripts/validate-docker.sh`** - Setup validation script
 - **`docs/DOCKER_DEPLOYMENT.md`** - Comprehensive deployment guide
 
@@ -19,8 +22,10 @@ The Speaker Diarization App has been successfully containerized with the followi
 - **Audio Processing**: Includes ffmpeg, libsndfile, sox for audio handling
 - **ML Libraries**: OpenAI Whisper, pyannote.audio, PyTorch (CPU)
 - **Security**: Non-root user, health checks, minimal attack surface
-- **Volume Support**: Persistent storage for uploads and data
-- **Environment Config**: Configurable credentials and settings
+- **Volume Support**: Persistent storage for uploads and logs with custom paths
+- **Environment Config**: Configurable credentials, logging, and directory mapping
+- **Comprehensive Logging**: Multi-level logging with timestamped files
+- **Testing Suite**: Automated validation of volume mapping and functionality
 
 ### 🚀 Quick Start Commands
 
@@ -31,11 +36,56 @@ The Speaker Diarization App has been successfully containerized with the followi
 # 2. Build image
 ./scripts/build.sh
 
-# 3. Deploy application
+# 3. Deploy application (basic)
 ./scripts/deploy.sh
 
-# 4. Access application
+# 4. Deploy with custom directories
+UPLOADS_HOST_PATH=/data/uploads LOGS_HOST_PATH=/data/logs ./scripts/deploy.sh
+
+# 5. Interactive deployment guide
+./scripts/deploy_examples.sh
+
+# 6. Test volume mapping
+./scripts/test_volume_mapping.sh
+
+# 7. Access application
 # http://localhost:8501
+```
+
+### 🔧 Advanced Deployment Examples
+
+```bash
+# Development with debug logging
+LOG_LEVEL=DEBUG ./scripts/deploy.sh
+
+# Production with custom paths and resource limits
+docker run -d \
+  --name whisprmate-prod \
+  --restart unless-stopped \
+  --memory 2g --cpus 2 \
+  -p 8501:8501 \
+  -e LOG_LEVEL=INFO \
+  -e UPLOADS_HOST_PATH=/var/whisprmate/uploads \
+  -e LOGS_HOST_PATH=/var/whisprmate/logs \
+  -v /var/whisprmate/uploads:/app/uploads \
+  -v /var/whisprmate/logs:/app/logs \
+  whisprmate
+
+# Network storage deployment
+docker run -d \
+  --name whisprmate-networked \
+  -p 8501:8501 \
+  -e UPLOADS_HOST_PATH=/mnt/nfs-storage/uploads \
+  -e LOGS_HOST_PATH=/mnt/nfs-storage/logs \
+  -v /mnt/nfs-storage/uploads:/app/uploads \
+  -v /mnt/nfs-storage/logs:/app/logs \
+  whisprmate
+
+# Docker Compose with environment variables
+UPLOADS_HOST_PATH=/shared/uploads \
+LOGS_HOST_PATH=/shared/logs \
+LOG_LEVEL=DEBUG \
+docker-compose up -d
 ```
 
 ### 🔧 Manual Docker Commands

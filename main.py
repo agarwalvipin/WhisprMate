@@ -1,8 +1,11 @@
 """Main application entry point using refactored architecture."""
 
 import argparse
+import os
+
 import streamlit as st
 
+from config.logging_config import get_logger, setup_logging
 from config.settings import AppConfig, UIConfig
 from src.services.audio_processor import AudioProcessorService
 from src.services.auth_service import AuthenticationService
@@ -12,34 +15,44 @@ from src.ui.components.auth import AuthComponent
 from src.ui.components.file_components import FileListComponent, FileUploadComponent
 from src.utils.helpers import filter_audio_files, sort_audio_files
 
+# Initialize logging
+setup_logging(log_level=os.getenv("LOG_LEVEL", "INFO"), log_file=os.getenv("LOG_FILE"))
+logger = get_logger("main")
+
 
 class SpeakerDiarizationApp:
     """Main application class following SOLID principles."""
 
     def __init__(self, default_username: str = "admin", default_password: str = "admin"):
         """Initialize the application with dependency injection.
-        
+
         Args:
             default_username: Default username for authentication
             default_password: Default password for authentication
         """
+        logger.info("Initializing SpeakerDiarizationApp")
+        logger.debug(f"Default credentials: username={default_username}")
+
         # Initialize services (Dependency Injection)
+        logger.debug("Initializing services...")
         self.auth_service = AuthenticationService(
             enable_auth=True,  # Enable authentication for login form
             default_username=default_username,
-            default_password=default_password
+            default_password=default_password,
         )
         self.file_manager = FileManagerService()
         self.transcript_manager = TranscriptManagerService()
         self.audio_processor = AudioProcessorService()
 
         # Initialize UI components
+        logger.debug("Initializing UI components...")
         self.auth_component = AuthComponent(self.auth_service)
         self.file_list_component = FileListComponent(self.file_manager, self.transcript_manager)
         self.file_upload_component = FileUploadComponent(self.file_manager)
 
         # Initialize session state
         self._init_session_state()
+        logger.info("SpeakerDiarizationApp initialization completed")
 
     def _init_session_state(self) -> None:
         """Initialize Streamlit session state."""
@@ -48,6 +61,8 @@ class SpeakerDiarizationApp:
 
     def run(self) -> None:
         """Run the main application."""
+        logger.info("Starting WhisprMate application")
+
         # Configure Streamlit page
         st.set_page_config(
             page_title=AppConfig.PAGE_TITLE,
@@ -55,20 +70,27 @@ class SpeakerDiarizationApp:
             initial_sidebar_state="expanded",
             menu_items=UIConfig.MENU_ITEMS,
         )
+        logger.debug("Streamlit page configuration set")
 
         # Apply custom CSS
         st.markdown(UIConfig.MAIN_HEADER_CSS, unsafe_allow_html=True)
 
         # Check authentication
+        logger.debug("Checking authentication")
         if not self.auth_component.require_authentication():
+            logger.info("Authentication required - showing login form")
             return
+
+        logger.info("User authenticated successfully")
 
         # Render header
         self._render_header()
 
         # Handle navigation
         page = st.session_state.current_page
+        logger.debug(f"Current page: {page}")
         if page == "player":
+            logger.info("Rendering player page")
             self._show_player_page()
             return
 
@@ -76,12 +98,15 @@ class SpeakerDiarizationApp:
         tab1, tab2, tab3 = st.tabs(["📊 Dashboard", "📤 Upload", "⚙️ Processing Status"])
 
         with tab1:
+            logger.debug("Rendering dashboard tab")
             self._show_dashboard()
 
         with tab2:
+            logger.debug("Rendering upload tab")
             self._show_upload_section()
 
         with tab3:
+            logger.debug("Rendering processing status tab")
             self._show_processing_status()
 
     def _render_header(self) -> None:
@@ -199,6 +224,9 @@ class SpeakerDiarizationApp:
 
     def _process_audio_file(self, audio_file, model_size: str, language: str) -> None:
         """Process audio file with given options."""
+        logger.info(f"Starting audio file processing: {audio_file.name}")
+        logger.debug(f"Processing parameters: model={model_size}, language={language}")
+
         from src.core.models import ProcessingOptions
 
         # Create processing options
@@ -211,9 +239,11 @@ class SpeakerDiarizationApp:
             estimated_time = self.audio_processor.estimate_processing_time(
                 audio_file.duration_seconds, options
             )
+            logger.info(f"Estimated processing time: {estimated_time:.0f} seconds")
             st.info(f"⏱️ Estimated processing time: {estimated_time:.0f} seconds")
 
         # Process the file
+        logger.info("Starting audio processing...")
         with st.spinner("🤖 Processing audio... This may take a few minutes."):
             try:
                 # In a real async implementation, this would be await
@@ -223,6 +253,7 @@ class SpeakerDiarizationApp:
                 result = asyncio.run(self.audio_processor.process_audio(audio_file, options))
 
                 if result.status.value == "completed":
+                    logger.info(f"Audio processing completed successfully for: {audio_file.name}")
                     # Save transcript
                     self.transcript_manager.save_transcript(audio_file, result)
 
@@ -250,13 +281,18 @@ class SpeakerDiarizationApp:
                             )
                         with col2:
                             if st.button("▶️ Open Player"):
+                                logger.info(f"Opening player for: {audio_file.name}")
                                 st.session_state["player_file"] = audio_file.name
                                 st.session_state["current_page"] = "player"
                                 st.rerun()
                 else:
+                    logger.error(
+                        f"Audio processing failed for {audio_file.name}: {result.error_message}"
+                    )
                     st.error(f"❌ Processing failed: {result.error_message}")
 
             except Exception as e:
+                logger.exception(f"Unexpected error processing {audio_file.name}: {str(e)}")
                 st.error(f"❌ Processing error: {str(e)}")
 
     def _show_player_page(self) -> None:
@@ -621,25 +657,25 @@ class SpeakerDiarizationApp:
 
 def main():
     """Main entry point."""
+    logger.info("WhisprMate application starting...")
+
     parser = argparse.ArgumentParser(description="Speaker Diarization & Transcription App")
     parser.add_argument(
-        "--username",
-        default="admin",
-        help="Default username for login (default: admin)"
+        "--username", default="admin", help="Default username for login (default: admin)"
     )
     parser.add_argument(
-        "--password",
-        default="admin",
-        help="Default password for login (default: admin)"
+        "--password", default="admin", help="Default password for login (default: admin)"
     )
-    
+
     args = parser.parse_args()
-    
-    app = SpeakerDiarizationApp(
-        default_username=args.username,
-        default_password=args.password
-    )
-    app.run()
+    logger.info(f"Starting app with username: {args.username}")
+
+    try:
+        app = SpeakerDiarizationApp(default_username=args.username, default_password=args.password)
+        app.run()
+    except Exception as e:
+        logger.exception(f"Fatal error in main application: {str(e)}")
+        raise
 
 
 if __name__ == "__main__":

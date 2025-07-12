@@ -1,14 +1,19 @@
 """Application configuration settings."""
 
+import os
 from pathlib import Path
 from typing import List
+
+from config.logging_config import get_logger
+
+logger = get_logger("config")
 
 
 class AppConfig:
     """Application configuration settings."""
 
-    # File settings
-    UPLOAD_DIR: Path = Path("uploads")
+    # File settings - Support environment variable for uploads directory
+    _DEFAULT_UPLOAD_DIR: Path = Path("uploads")
     MAX_FILE_SIZE_MB: int = 50
     SUPPORTED_FORMATS: List[str] = ["wav", "mp3"]
 
@@ -27,9 +32,35 @@ class AppConfig:
 
     @classmethod
     def get_upload_dir(cls) -> Path:
-        """Get upload directory path, creating if necessary."""
-        cls.UPLOAD_DIR.mkdir(exist_ok=True)
-        return cls.UPLOAD_DIR
+        """Get upload directory path from environment variable or default.
+
+        Environment Variables:
+            UPLOADS_DIR: Custom path for uploads directory
+            UPLOADS_HOST_PATH: Host path for Docker volume mapping
+
+        Returns:
+            Path: Upload directory path
+        """
+        # Check for custom uploads directory from environment
+        uploads_dir = os.getenv("UPLOADS_DIR")
+        if uploads_dir:
+            upload_path = Path(uploads_dir)
+            logger.info(f"Using custom uploads directory from UPLOADS_DIR: {upload_path}")
+        else:
+            # Check for host path mapping (useful for Docker)
+            host_path = os.getenv("UPLOADS_HOST_PATH")
+            if host_path:
+                upload_path = Path("/app/uploads")  # Container path
+                logger.info(f"Using Docker host path mapping: {host_path} -> {upload_path}")
+            else:
+                upload_path = cls._DEFAULT_UPLOAD_DIR
+                logger.debug(f"Using default uploads directory: {upload_path}")
+
+        # Create directory if it doesn't exist
+        upload_path.mkdir(parents=True, exist_ok=True)
+        logger.debug(f"Upload directory ensured: {upload_path}")
+
+        return upload_path
 
     @classmethod
     def get_max_file_size_bytes(cls) -> int:

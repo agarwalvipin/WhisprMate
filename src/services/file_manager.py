@@ -6,9 +6,12 @@ from typing import List, Optional
 
 import soundfile as sf
 
+from config.logging_config import get_logger
 from config.settings import AppConfig
 
 from ..core.models import AudioFile, FileManagerInterface, SupportedFormat
+
+logger = get_logger("file")
 
 
 class FileManagerService(FileManagerInterface):
@@ -21,6 +24,11 @@ class FileManagerService(FileManagerInterface):
             upload_dir: Directory for uploaded files (defaults to config)
         """
         self.upload_dir = upload_dir or AppConfig.get_upload_dir()
+        logger.info(f"FileManagerService initialized with upload directory: {self.upload_dir}")
+
+        # Ensure upload directory exists
+        self.upload_dir.mkdir(parents=True, exist_ok=True)
+        logger.debug(f"Upload directory ensured: {self.upload_dir}")
 
     def save_uploaded_file(self, uploaded_file, filename: str) -> AudioFile:
         """Save uploaded file and return AudioFile instance.
