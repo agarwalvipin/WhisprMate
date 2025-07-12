@@ -30,6 +30,9 @@ Project planning, roadmaps, and feature documentation.
 
 - **Getting Started**: See the main [README.md](../README.md) in the root directory
 - **Architecture Overview**: [Architecture Documentation](./architecture/ARCHITECTURE.md)
+- **Project Structure**: [Directory Organization](./PROJECT_STRUCTURE.md)
+- **Authentication Setup**: [Authentication Guide](./AUTHENTICATION.md)
+- **Development Guidelines**: [Coding Standards](./development/DEVELOPMENT_GUIDELINES.md)
 - **Contributing**: [Contributing Guidelines](./development/CONTRIBUTING.md)
 - **Project Roadmap**: [Development Plan](./project/plan.md)
 

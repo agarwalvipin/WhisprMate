@@ -36,11 +36,24 @@ class AuthComponent:
                 return True
             else:
                 st.info("🔒 Please log in to continue.")
+                
+                # Show default credentials info
+                with st.expander("ℹ️ Default Credentials"):
+                    st.text(f"Username: {self.auth_service.default_username}")
+                    st.text(f"Password: {self.auth_service.default_password}")
 
                 with st.form("login_form"):
-                    username = st.text_input("Username")
-                    password = st.text_input("Password", type="password")
+                    username = st.text_input(
+                        "Username", 
+                        placeholder=self.auth_service.default_username
+                    )
+                    password = st.text_input(
+                        "Password", 
+                        type="password", 
+                        placeholder=self.auth_service.default_password
+                    )
                     submitted = st.form_submit_button("🔑 Login")
+                    use_defaults = st.form_submit_button("🔑 Use Defaults")
 
                     if submitted:
                         if self.auth_service.login(username, password):
@@ -48,6 +61,16 @@ class AuthComponent:
                             st.rerun()
                         else:
                             st.error("Invalid credentials")
+                    
+                    elif use_defaults:
+                        if self.auth_service.login(
+                            self.auth_service.default_username,
+                            self.auth_service.default_password
+                        ):
+                            st.success("Login successful!")
+                            st.rerun()
+                        else:
+                            st.error("Default credentials failed!")
 
                 return False
 
@@ -82,16 +105,32 @@ class AuthComponent:
 
                 with st.form("main_login_form"):
                     st.markdown("#### Enter your credentials")
-                    username = st.text_input("👤 Username", placeholder="Enter username")
+                    
+                    # Show default credentials info
+                    with st.expander("ℹ️ Default Credentials", expanded=False):
+                        st.info(f"""
+                        **Default Username:** `{self.auth_service.default_username}`  
+                        **Default Password:** `{self.auth_service.default_password}`
+                        
+                        You can change these defaults by running the app with:  
+                        `streamlit run main.py -- --username YOUR_USERNAME --password YOUR_PASSWORD`
+                        """)
+                    
+                    username = st.text_input(
+                        "👤 Username", 
+                        placeholder=f"Enter username (default: {self.auth_service.default_username})"
+                    )
                     password = st.text_input(
-                        "🔒 Password", type="password", placeholder="Enter password"
+                        "🔒 Password", 
+                        type="password", 
+                        placeholder=f"Enter password (default: {self.auth_service.default_password})"
                     )
 
                     col_btn1, col_btn2 = st.columns(2)
                     with col_btn1:
                         submitted = st.form_submit_button("🔑 Login", use_container_width=True)
                     with col_btn2:
-                        guest = st.form_submit_button("👤 Guest Access", use_container_width=True)
+                        use_defaults = st.form_submit_button("� Use Defaults", use_container_width=True)
 
                     if submitted:
                         if self.auth_service.login(username, password):
@@ -100,11 +139,16 @@ class AuthComponent:
                         else:
                             st.error("Invalid credentials. Please try again.")
 
-                    elif guest:
-                        # Allow guest access
-                        self.auth_service.login("guest", "guest")
-                        st.success("Logged in as guest!")
-                        st.rerun()
+                    elif use_defaults:
+                        # Use default credentials
+                        if self.auth_service.login(
+                            self.auth_service.default_username, 
+                            self.auth_service.default_password
+                        ):
+                            st.success("Logged in with default credentials!")
+                            st.rerun()
+                        else:
+                            st.error("Default credentials failed!")
 
                 st.markdown("</div>", unsafe_allow_html=True)
 

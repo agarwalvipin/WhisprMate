@@ -8,13 +8,22 @@ from ..core.models import AuthenticationInterface
 class AuthenticationService(AuthenticationInterface):
     """Service for handling user authentication."""
 
-    def __init__(self, enable_auth: bool = False):
+    def __init__(
+        self,
+        enable_auth: bool = False,
+        default_username: str = "admin",
+        default_password: str = "admin"
+    ):
         """Initialize authentication service.
 
         Args:
             enable_auth: Whether authentication is enabled
+            default_username: Default username for authentication
+            default_password: Default password for authentication
         """
         self.enable_auth = enable_auth
+        self.default_username = default_username
+        self.default_password = default_password
 
     def is_authenticated(self) -> bool:
         """Check if user is authenticated.
@@ -31,8 +40,8 @@ class AuthenticationService(AuthenticationInterface):
         """Authenticate user.
 
         Args:
-            username: Username (currently unused)
-            password: Password (currently unused)
+            username: Username
+            password: Password
 
         Returns:
             True if login successful
@@ -40,11 +49,13 @@ class AuthenticationService(AuthenticationInterface):
         # Simple demo authentication - in production, use proper auth
         if not self.enable_auth:
             st.session_state["authenticated"] = True
+            st.session_state["username"] = username or "user"
             return True
 
-        # Demo: accept any non-empty credentials
-        if username and password:
+        # Check against default credentials
+        if username == self.default_username and password == self.default_password:
             st.session_state["authenticated"] = True
+            st.session_state["username"] = username
             return True
 
         return False
@@ -52,6 +63,8 @@ class AuthenticationService(AuthenticationInterface):
     def logout(self) -> None:
         """Log out user."""
         st.session_state["authenticated"] = False
+        if "username" in st.session_state:
+            del st.session_state["username"]
 
     def require_auth(self) -> bool:
         """Check if authentication is required and user is authenticated.

@@ -4,14 +4,41 @@ A clean, modern tool for audio transcription with speaker identification and int
 
 ## 🚀 Quick Start
 
+### Option 1: Web Interface (Streamlit)
+
+Run the interactive web application:
+
+```bash
+# With default credentials (admin/admin)
+streamlit run main.py
+
+# With custom credentials
+streamlit run main.py -- --username YOUR_USERNAME --password YOUR_PASSWORD
+```
+
+Then login using the provided credentials to access the full application.
+
+### Option 2: Command Line Interface
+
 1. **Run Speaker Diarization:**
 
    ```bash
-   python diarize_cli_improved.py "your_audio.wav" -o "output.srt" --model base --language en
+   python scripts/diarize_cli_improved.py "your_audio.wav" -o "output.srt" --model base --language en
    ```
 
 2. **View Results:**
-   Open `player.html` in your browser to see the interactive transcript with speaker dialogs.
+   Open `static/player.html` in your browser to see the interactive transcript with speaker dialogs.
+
+## 🔐 Authentication
+
+The web application includes a login system with configurable credentials:
+
+- **Default Username**: `admin`
+- **Default Password**: `admin`
+- **Custom Credentials**: Use `--username` and `--password` arguments
+- **Quick Login**: Use the "Use Defaults" button for rapid access
+
+For detailed authentication setup, see [docs/AUTHENTICATION.md](docs/AUTHENTICATION.md).
 
 ## 📁 Project Structure
 

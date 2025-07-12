@@ -1,5 +1,6 @@
 """Main application entry point using refactored architecture."""
 
+import argparse
 import streamlit as st
 
 from config.settings import AppConfig, UIConfig
@@ -15,10 +16,19 @@ from src.utils.helpers import filter_audio_files, sort_audio_files
 class SpeakerDiarizationApp:
     """Main application class following SOLID principles."""
 
-    def __init__(self):
-        """Initialize the application with dependency injection."""
+    def __init__(self, default_username: str = "admin", default_password: str = "admin"):
+        """Initialize the application with dependency injection.
+        
+        Args:
+            default_username: Default username for authentication
+            default_password: Default password for authentication
+        """
         # Initialize services (Dependency Injection)
-        self.auth_service = AuthenticationService(enable_auth=AppConfig.ENABLE_AUTH)
+        self.auth_service = AuthenticationService(
+            enable_auth=True,  # Enable authentication for login form
+            default_username=default_username,
+            default_password=default_password
+        )
         self.file_manager = FileManagerService()
         self.transcript_manager = TranscriptManagerService()
         self.audio_processor = AudioProcessorService()
@@ -611,7 +621,24 @@ class SpeakerDiarizationApp:
 
 def main():
     """Main entry point."""
-    app = SpeakerDiarizationApp()
+    parser = argparse.ArgumentParser(description="Speaker Diarization & Transcription App")
+    parser.add_argument(
+        "--username",
+        default="admin",
+        help="Default username for login (default: admin)"
+    )
+    parser.add_argument(
+        "--password",
+        default="admin",
+        help="Default password for login (default: admin)"
+    )
+    
+    args = parser.parse_args()
+    
+    app = SpeakerDiarizationApp(
+        default_username=args.username,
+        default_password=args.password
+    )
     app.run()
 
 
