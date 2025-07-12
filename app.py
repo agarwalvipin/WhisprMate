@@ -112,7 +112,10 @@ def main():
         menu_items={
             "Get Help": "https://github.com/your-repo/issues",
             "Report a bug": "https://github.com/your-repo/issues",
-            "About": "# Speaker Diarization App\nTranscribe and identify speakers in audio files with AI.",
+            "About": (
+                "# Speaker Diarization App\n"
+                "Transcribe and identify speakers in audio files with AI."
+            ),
         },
     )
 
@@ -291,7 +294,11 @@ def show_dashboard():
             st.markdown(
                 f"""
                 <div class="file-card">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    ">
                         <div>
                             <h4 style="margin: 0; color: #333;">{row["title"]}</h4>
                             <p style="margin: 5px 0; color: #666; font-size: 0.9em;">
@@ -390,14 +397,14 @@ def show_upload_section():
         st.subheader("🔧 Processing Options")
         col1, col2 = st.columns(2)
         with col1:
-            model_size = st.selectbox(
+            st.selectbox(
                 "Whisper Model",
                 ["tiny", "base", "small", "medium", "large"],
                 index=1,
                 help="Larger models are more accurate but slower",
             )
         with col2:
-            language = st.selectbox(
+            st.selectbox(
                 "Language",
                 ["auto", "en", "es", "fr", "de", "it", "pt", "ru", "ja", "ko"],
                 help="Auto-detect or specify language",
@@ -591,15 +598,15 @@ def create_enhanced_player_html(audio_b64, audio_ext, transcript_b64):
         <title>Enhanced Audio Player</title>
         <script src="https://unpkg.com/wavesurfer.js"></script>
         <style>
-            body {{ 
+            body {{
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                margin: 0; 
+                margin: 0;
                 padding: 20px;
                 background: #f8f9fa;
             }}
-            #waveform {{ 
-                width: 100%; 
-                height: 120px; 
+            #waveform {{
+                width: 100%;
+                height: 120px;
                 margin-bottom: 20px;
                 background: white;
                 border-radius: 10px;
@@ -626,18 +633,18 @@ def create_enhanced_player_html(audio_b64, audio_ext, transcript_b64):
                 background: #5a6fd8;
                 transform: translateY(-2px);
             }}
-            #transcript {{ 
-                max-height: 400px; 
-                overflow-y: auto; 
+            #transcript {{
+                max-height: 400px;
+                overflow-y: auto;
                 background: white;
                 border-radius: 12px;
                 padding: 20px;
                 box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             }}
-            .dialog {{ 
+            .dialog {{
                 display: flex;
                 align-items: flex-start;
-                margin: 15px 0; 
+                margin: 15px 0;
                 padding: 15px;
                 border-radius: 10px;
                 transition: all 0.3s ease;
@@ -671,8 +678,12 @@ def create_enhanced_player_html(audio_b64, audio_ext, transcript_b64):
                 margin: 0 15px;
                 box-shadow: 0 2px 8px rgba(0,0,0,0.2);
             }}
-            .speaker-0 .speaker-avatar {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }}
-            .speaker-1 .speaker-avatar {{ background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }}
+            .speaker-0 .speaker-avatar {{
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }}
+            .speaker-1 .speaker-avatar {{
+                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            }}
             .content {{ flex: 1; }}
             .speaker-name {{
                 font-weight: 700;
@@ -713,16 +724,16 @@ def create_enhanced_player_html(audio_b64, audio_ext, transcript_b64):
                 <span id="total-time">0:00</span>
             </div>
         </div>
-        
+
         <div id="controls">
             <button class="control-btn" onclick="wavesurfer.playPause()">⏯️ Play/Pause</button>
             <button class="control-btn" onclick="wavesurfer.stop()">⏹️ Stop</button>
             <button class="control-btn" onclick="wavesurfer.skip(-10)">⏪ -10s</button>
             <button class="control-btn" onclick="wavesurfer.skip(10)">⏩ +10s</button>
         </div>
-        
+
         <div id="transcript"></div>
-        
+
         <script>
             var wavesurfer = WaveSurfer.create({{
                 container: '#waveform',
@@ -743,9 +754,10 @@ def create_enhanced_player_html(audio_b64, audio_ext, transcript_b64):
             wavesurfer.on('audioprocess', function(time) {{
                 document.getElementById('current-time').textContent = formatTime(time);
             }});
-            
+
             wavesurfer.on('ready', function() {{
-                document.getElementById('total-time').textContent = formatTime(wavesurfer.getDuration());
+                document.getElementById('total-time').textContent =
+                    formatTime(wavesurfer.getDuration());
             }});
 
             function formatTime(seconds) {{
@@ -756,7 +768,8 @@ def create_enhanced_player_html(audio_b64, audio_ext, transcript_b64):
 
             function parseSRT(data) {{
                 const srt = [];
-                const regex = /(\\d+)\\s+(\\d{{2}}:\\d{{2}}:\\d{{2}},\\d{{3}})\\s-->\\s(\\d{{2}}:\\d{{2}}:\\d{{2}},\\d{{3}})\\s+([\\s\\S]*?)(?=\\n{{2,}}|$)/g;
+                const regex =
+                    /(\\d+)\\s+(\\d{2}:\\d{2}:\\d{2},\\d{3})\\s-->\\s(\\d{2}:\\d{2}:\\d{2},\\d{3})\\s+([\\s\\S]*?)(?=\\n{2,}|$)/g;
                 let match;
                 while ((match = regex.exec(data)) !== null) {{
                     let text = match[4].replace(/\\n/g, ' ');
@@ -788,15 +801,15 @@ def create_enhanced_player_html(audio_b64, audio_ext, transcript_b64):
                 .then(srtText => {{
                     const cues = parseSRT(srtText);
                     const transcriptDiv = document.getElementById('transcript');
-                    
+
                     cues.forEach((cue, i) => {{
                         const div = document.createElement('div');
                         div.className = 'dialog speaker-' + (cue.speaker.endsWith("0") ? "0" : "1");
                         div.id = 'cue-' + i;
-                        
+
                         const speakerNum = cue.speaker.endsWith("0") ? "1" : "2";
                         const speakerName = `Speaker ${{speakerNum}}`;
-                        
+
                         div.innerHTML = `
                             <span class="timestamp">${{formatTime(cue.start)}}</span>
                             <div class="speaker-avatar">${{speakerNum}}</div>
@@ -805,12 +818,12 @@ def create_enhanced_player_html(audio_b64, audio_ext, transcript_b64):
                                 <div class="text">${{cue.text}}</div>
                             </div>
                         `;
-                        
+
                         div.onclick = () => {{
                             const progress = cue.start / wavesurfer.getDuration();
                             wavesurfer.seekTo(progress);
                         }};
-                        
+
                         transcriptDiv.appendChild(div);
                     }});
 

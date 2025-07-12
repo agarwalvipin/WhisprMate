@@ -5,18 +5,21 @@ Welcome to the Speaker Diarization Project documentation! This directory contain
 ## 📖 Documentation Structure
 
 ### 🏗️ [Architecture](./architecture/)
+
 Technical documentation about the project's architecture and design decisions.
 
 - **[ARCHITECTURE.md](./architecture/ARCHITECTURE.md)** - Complete architecture overview and SOLID principles implementation
 - **[REFACTORING_SUMMARY.md](./architecture/REFACTORING_SUMMARY.md)** - Summary of refactoring changes and improvements
 
 ### 💻 [Development](./development/)
+
 Guidelines and standards for contributing to the project.
 
 - **[CONTRIBUTING.md](./development/CONTRIBUTING.md)** - How to contribute to the project
 - **[CODE_OF_CONDUCT.md](./development/CODE_OF_CONDUCT.md)** - Community standards and behavior guidelines
 
 ### 📋 [Project](./project/)
+
 Project planning, roadmaps, and feature documentation.
 
 - **[summary.md](./project/summary.md)** - Comprehensive project overview and features

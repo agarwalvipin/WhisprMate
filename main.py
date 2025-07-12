@@ -80,7 +80,10 @@ class SpeakerDiarizationApp:
             """
             <div class="main-header">
                 <h1>🎙️ Speaker Diarization & Transcription</h1>
-                <p>Upload audio files and get AI-powered transcriptions with speaker identification</p>
+                <p>
+                   Upload audio files and get AI-powered transcriptions with
+                   speaker identification
+                </p>
             </div>
         """,
             unsafe_allow_html=True,
@@ -158,7 +161,7 @@ class SpeakerDiarizationApp:
             for file in processing_files:
                 st.markdown(
                     f"""
-                    <div style="padding: 10px; background: #fff3cd; 
+                    <div style="padding: 10px; background: #fff3cd;
                                 border-radius: 5px; margin: 5px 0;">
                         <span class="status-indicator status-processing"></span>
                         <strong>{file.name}</strong> - Waiting for processing
@@ -172,7 +175,7 @@ class SpeakerDiarizationApp:
             for file in completed_files:
                 st.markdown(
                     f"""
-                    <div style="padding: 10px; background: #d4edda; 
+                    <div style="padding: 10px; background: #d4edda;
                                 border-radius: 5px; margin: 5px 0;">
                         <span class="status-indicator status-completed"></span>
                         <strong>{file.name}</strong> - Processing completed
