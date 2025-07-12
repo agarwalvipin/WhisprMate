@@ -7,10 +7,12 @@ WhisprMate supports flexible Docker volume mapping to enable persistent storage,
 ## Features
 
 - **Persistent Upload Storage**: User files persist across container restarts
-- **Custom Host Directories**: Map uploads and logs to any host directory
+- **Custom Host Directories**: Map uploads and logs to any host directory  
 - **Environment Variable Configuration**: Flexible deployment configuration
 - **Network Storage Support**: Compatible with NFS, SMB, and cloud storage
 - **Automated Testing**: Comprehensive validation scripts
+- **Smart Permission Handling**: Automatic permission detection and fallback mechanisms
+- **Graceful Error Handling**: Application continues to function even with permission issues
 
 ## Configuration
 

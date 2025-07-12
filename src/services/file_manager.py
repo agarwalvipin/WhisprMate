@@ -24,11 +24,62 @@ class FileManagerService(FileManagerInterface):
             upload_dir: Directory for uploaded files (defaults to config)
         """
         self.upload_dir = upload_dir or AppConfig.get_upload_dir()
-        logger.info(f"FileManagerService initialized with upload directory: {self.upload_dir}")
+        logger.info(
+            f"FileManagerService initialized with upload directory: {self.upload_dir}"
+        )
 
-        # Ensure upload directory exists
-        self.upload_dir.mkdir(parents=True, exist_ok=True)
-        logger.debug(f"Upload directory ensured: {self.upload_dir}")
+        # Ensure upload directory exists with proper error handling
+        try:
+            self.upload_dir.mkdir(parents=True, exist_ok=True)
+            logger.debug(f"Upload directory ensured: {self.upload_dir}")
+
+            # Test write permissions
+            test_file = self.upload_dir / ".write_test"
+            test_file.touch()
+            test_file.unlink()
+            logger.debug("Upload directory write permissions verified")
+
+        except (PermissionError, OSError) as e:
+            logger.error(
+                f"Failed to create or access upload directory {self.upload_dir}: {e}"
+            )
+
+            # Try a few fallback options
+            fallback_dirs = [
+                Path.home() / "whisprmate_uploads",  # User home directory
+                Path("/tmp") / "whisprmate_uploads",  # System temp directory
+                Path(".") / "temp_uploads",  # Current directory temp
+            ]
+
+            for fallback_dir in fallback_dirs:
+                logger.warning(f"Trying fallback directory: {fallback_dir}")
+                try:
+                    fallback_dir.mkdir(parents=True, exist_ok=True)
+                    # Test write permissions
+                    test_file = fallback_dir / ".write_test"
+                    test_file.touch()
+                    test_file.unlink()
+
+                    self.upload_dir = fallback_dir
+                    logger.info(
+                        f"Successfully using fallback directory: {self.upload_dir}"
+                    )
+                    break
+
+                except Exception as fallback_error:
+                    logger.warning(
+                        f"Fallback directory {fallback_dir} failed: {fallback_error}"
+                    )
+                    continue
+            else:
+                # All fallbacks failed
+                logger.error("All fallback directories failed")
+                raise Exception(
+                    f"Cannot create writable upload directory. "
+                    f"Original error: {e}. "
+                    f"Please check Docker volume permissions or run container "
+                    f"with appropriate user permissions."
+                )
 
     def save_uploaded_file(self, uploaded_file, filename: str) -> AudioFile:
         """Save uploaded file and return AudioFile instance.
@@ -39,12 +90,21 @@ class FileManagerService(FileManagerInterface):
 
         Returns:
             AudioFile instance with metadata
+
+        Raises:
+            PermissionError: If cannot write to upload directory
+            OSError: If file system operation fails
         """
         file_path = self.upload_dir / filename
 
-        # Save the file
-        with open(file_path, "wb") as f:
-            f.write(uploaded_file.getbuffer())
+        try:
+            # Save the file
+            with open(file_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
+            logger.info(f"Successfully saved file: {filename}")
+        except (PermissionError, OSError) as e:
+            logger.error(f"Failed to save file {filename}: {e}")
+            raise Exception(f"Error uploading file: {e}")
 
         # Get file metadata
         size_bytes = file_path.stat().st_size

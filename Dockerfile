@@ -26,6 +26,8 @@ RUN apt-get update && apt-get install -y \
     git \
     # curl for health checks
     curl \
+    # gosu for proper user switching in entrypoint
+    gosu \
     # Clean up to reduce image size
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
@@ -47,16 +49,23 @@ RUN pip install --upgrade pip && \
 # Copy the application code
 COPY . .
 
-# Create necessary directories
-RUN mkdir -p uploads data/samples static templates && \
+# Create necessary directories with proper permissions
+RUN mkdir -p uploads data/samples static templates logs && \
     # Make scripts executable
     chmod +x scripts/*.sh && \
-    chmod +x run_tests.py
+    chmod +x run_tests.py && \
+    # Set proper permissions for directories
+    chmod -R 777 uploads logs data
 
 # Create a non-root user for security
 RUN useradd --create-home --shell /bin/bash app && \
     chown -R app:app /app
-USER app
+
+# Set up entrypoint script
+RUN chmod +x scripts/docker-entrypoint.sh
+
+# Don't switch to app user yet - let entrypoint handle it
+# USER app
 
 # Expose Streamlit port
 EXPOSE 8501
@@ -66,4 +75,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:8501/_stcore/health || exit 1
 
 # Default command to run the Streamlit app
+ENTRYPOINT ["./scripts/docker-entrypoint.sh"]
 CMD ["streamlit", "run", "main.py", "--server.port=8501", "--server.address=0.0.0.0", "--server.headless=true", "--server.fileWatcherType=none", "--browser.gatherUsageStats=false"]

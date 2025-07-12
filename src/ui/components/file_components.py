@@ -144,7 +144,7 @@ class FileUploadComponent:
             """
             <div class="upload-zone">
                 <h3>🎵 Drag & Drop or Browse Files</h3>
-                <p>Supported formats: WAV, MP3 • Max size: 50MB</p>
+                <p>Supported formats: WAV, MP3 • Max size: 100MB</p>
             </div>
         """,
             unsafe_allow_html=True,
@@ -166,7 +166,7 @@ class FileUploadComponent:
             return False, None
 
         # Validate file size
-        if uploaded_file.size > 50 * 1024 * 1024:
+        if uploaded_file.size > 100 * 1024 * 1024:
             st.error("❌ File too large. Please upload a file smaller than 50MB.")
             return False, None
 

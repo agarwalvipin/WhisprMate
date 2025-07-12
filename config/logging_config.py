@@ -16,10 +16,16 @@ def setup_logging(log_level: str = "INFO", log_file: str = None) -> None:
     """
     # Create logs directory if it doesn't exist
     logs_dir = Path("logs")
-    logs_dir.mkdir(exist_ok=True)
+    try:
+        logs_dir.mkdir(exist_ok=True)
+        logs_writable = True
+    except (PermissionError, OSError) as e:
+        print(f"Warning: Cannot create logs directory: {e}")
+        print("Falling back to console-only logging")
+        logs_writable = False
 
     # Default log file with timestamp
-    if log_file is None:
+    if log_file is None and logs_writable:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         log_file = logs_dir / f"whisprmate_{timestamp}.log"
 
@@ -46,52 +52,66 @@ def setup_logging(log_level: str = "INFO", log_file: str = None) -> None:
                 "level": log_level,
                 "formatter": "console",
                 "stream": "ext://sys.stdout",
-            },
-            "file": {
+            }
+        },
+        "loggers": {},
+        "root": {"level": log_level, "handlers": ["console"]},
+    }
+
+    # Add file handlers only if logs directory is writable
+    if logs_writable and log_file:
+        try:
+            # Test if we can write to the log file
+            test_file = Path(log_file)
+            test_file.touch()
+
+            config["handlers"]["file"] = {
                 "class": "logging.FileHandler",
                 "level": "DEBUG",
                 "formatter": "detailed",
                 "filename": str(log_file),
                 "mode": "a",
                 "encoding": "utf-8",
-            },
-            "error_file": {
+            }
+
+            config["handlers"]["error_file"] = {
                 "class": "logging.FileHandler",
                 "level": "ERROR",
                 "formatter": "detailed",
                 "filename": str(logs_dir / "errors.log"),
                 "mode": "a",
                 "encoding": "utf-8",
-            },
+            }
+
+            # Update root and logger handlers to include file handlers
+            config["root"]["handlers"] = ["console", "file"]
+            file_handlers = ["console", "file", "error_file"]
+            simple_file_handlers = ["console", "file"]
+
+        except (PermissionError, OSError) as e:
+            print(f"Warning: Cannot write to log files: {e}")
+            print("Using console-only logging")
+            file_handlers = ["console"]
+            simple_file_handlers = ["console"]
+    else:
+        file_handlers = ["console"]
+        simple_file_handlers = ["console"]
+
+    # Configure application loggers
+    config["loggers"] = {
+        "whisprmate": {"level": "DEBUG", "handlers": file_handlers, "propagate": False},
+        "whisprmate.audio": {
+            "level": "DEBUG",
+            "handlers": simple_file_handlers,
+            "propagate": False,
         },
-        "loggers": {
-            "whisprmate": {
-                "level": "DEBUG",
-                "handlers": ["console", "file", "error_file"],
-                "propagate": False,
-            },
-            "whisprmate.audio": {
-                "level": "DEBUG",
-                "handlers": ["console", "file"],
-                "propagate": False,
-            },
-            "whisprmate.auth": {
-                "level": "DEBUG",
-                "handlers": ["console", "file"],
-                "propagate": False,
-            },
-            "whisprmate.file": {
-                "level": "DEBUG",
-                "handlers": ["console", "file"],
-                "propagate": False,
-            },
-            "whisprmate.transcript": {
-                "level": "DEBUG",
-                "handlers": ["console", "file"],
-                "propagate": False,
-            },
+        "whisprmate.auth": {"level": "DEBUG", "handlers": simple_file_handlers, "propagate": False},
+        "whisprmate.file": {"level": "DEBUG", "handlers": simple_file_handlers, "propagate": False},
+        "whisprmate.transcript": {
+            "level": "DEBUG",
+            "handlers": simple_file_handlers,
+            "propagate": False,
         },
-        "root": {"level": log_level, "handlers": ["console", "file"]},
     }
 
     logging.config.dictConfig(config)
@@ -101,8 +121,10 @@ def setup_logging(log_level: str = "INFO", log_file: str = None) -> None:
     logger.info("=" * 60)
     logger.info("WhisprMate Application Starting")
     logger.info(f"Log Level: {log_level}")
-    logger.info(f"Log File: {log_file}")
+    logger.info(f"Log File: {log_file if log_file else 'Console only'}")
     logger.info(f"Environment: {os.getenv('ENVIRONMENT', 'development')}")
+    if not logs_writable:
+        logger.warning("File logging disabled due to permissions - using console only")
     logger.info("=" * 60)
 
 
