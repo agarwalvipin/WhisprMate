@@ -18,7 +18,22 @@ streamlit run main.py -- --username YOUR_USERNAME --password YOUR_PASSWORD
 
 Then login using the provided credentials to access the full application.
 
-### Option 2: Command Line Interface
+### Option 2: Docker Deployment
+
+Deploy the application using Docker for isolated and consistent environments:
+
+```bash
+# Quick deployment with script
+./scripts/deploy.sh
+
+# Or manual Docker commands
+docker build -t WhisprMate .
+docker run -p 8501:8501 -v $(pwd)/uploads:/app/uploads WhisprMate
+```
+
+Then access the application at http://localhost:8501
+
+### Option 3: Command Line Interface
 
 1. **Run Speaker Diarization:**
 
@@ -43,7 +58,7 @@ For detailed authentication setup, see [docs/AUTHENTICATION.md](docs/AUTHENTICAT
 ## 📁 Project Structure
 
 ```
-notta/
+WhisprMate/
 ├── diarize_cli_improved.py    # Main CLI tool for diarization
 ├── player.html               # Web player with dialog UI
 ├── real_diarized_output.srt  # Example output with real speakers

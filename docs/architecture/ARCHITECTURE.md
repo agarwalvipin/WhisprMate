@@ -7,7 +7,7 @@ This project has been refactored using SOLID design principles and Python best p
 The application follows a clean architecture pattern with clear separation of concerns:
 
 ```
-notta/
+WhisprMate/
 ├── main.py                     # New main entry point
 ├── app.py                      # Original monolithic app (kept for reference)
 ├── config/                     # Configuration management

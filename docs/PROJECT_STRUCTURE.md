@@ -5,7 +5,7 @@ This document outlines the organized directory structure for the Speaker Diariza
 ## 📁 Directory Structure
 
 ```
-notta/
+WhisprMate/
 ├── 📄 main.py                           # Main Streamlit application entry point
 ├── 📄 pyproject.toml                    # Project configuration and dependencies
 ├── 📄 requirements.txt                  # Python dependencies

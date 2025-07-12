@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  speaker-diarization-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: speaker-diarization-app
+    ports:
+      - "8501:8501"
+    environment:
+      # Default authentication credentials (can be overridden)
+      - STREAMLIT_USERNAME=admin
+      - STREAMLIT_PASSWORD=admin
+      # HuggingFace token for speaker diarization (set in .env or override here)
+      - HF_TOKEN=${HF_TOKEN:-}
+      # Streamlit configuration
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+    volumes:
+      # Mount uploads directory for persistent file storage
+      - ./uploads:/app/uploads
+      # Mount data directory for samples and outputs
+      - ./data:/app/data
+      # Optional: Mount .env file if it exists
+      - ./.env:/app/.env:ro
+    restart: unless-stopped
+    networks:
+      - speaker-diarization-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8501/_stcore/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Optional: Add a reverse proxy for production deployments
+  nginx:
+    image: nginx:alpine
+    container_name: speaker-diarization-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      # Add SSL certificates if needed
+      # - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - speaker-diarization-app
+    restart: unless-stopped
+    networks:
+      - speaker-diarization-network
+    profiles:
+      - production
+
+networks:
+  speaker-diarization-network:
+    driver: bridge
+
+volumes:
+  uploads_data:
+    driver: local
+  app_data:
+    driver: local

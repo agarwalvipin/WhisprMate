@@ -7,7 +7,7 @@ I have successfully refactored your Speaker Diarization app using SOLID design p
 ## 📁 New Project Structure
 
 ```
-notta/
+WhisprMate/
 ├── main.py                     # ✨ NEW: Clean entry point
 ├── app.py                      # 📜 LEGACY: Original monolithic code (kept for reference)
 ├── ARCHITECTURE.md             # 📖 Architecture documentation

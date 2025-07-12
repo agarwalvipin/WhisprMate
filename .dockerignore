@@ -1,0 +1,80 @@
+# Version control
+.git
+.gitignore
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Python cache and compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.pytest_cache/
+.coverage
+.tox/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs and temporary files
+*.log
+.cache/
+.ruff_cache/
+
+# Environment variables (sensitive)
+.env
+.env.local
+.env.production
+
+# User uploads (runtime data)
+uploads/*
+!uploads/.gitkeep
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Documentation build
+docs/_build/
+
+# Large model files (will be downloaded at runtime)
+*.pth
+*.pt
+*.bin
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Test outputs
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Node modules (if any)
+node_modules/
+
+# Docker files
+Dockerfile*
+docker-compose*.yml
+.dockerignore
