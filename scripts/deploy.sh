@@ -4,6 +4,13 @@
 
 set -e
 
+# Load environment variables from .env if present
+if [ -f .env ]; then
+    set -a
+    source .env
+    set +a
+fi
+
 # Configuration
 IMAGE_NAME="whisprmate"
 CONTAINER_NAME="whisprmate"
