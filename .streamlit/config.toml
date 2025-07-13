@@ -1,0 +1,29 @@
+[server]
+# Disable file watcher for certain directories to avoid issues with temporary files
+fileWatcherType = "auto"
+
+[global]
+# Suppress deprecation warnings
+showWarningOnDirectExecution = false
+
+[logger]
+# Set logging level
+level = "info"
+
+# File watcher configuration
+[server.fileWatcher]
+# Ignore patterns for file watching
+ignorePatterns = [
+    "*.egg-info/*",
+    "*.egg-info/**/*",
+    ".venv/*",
+    ".venv/**/*",
+    "__pycache__/*",
+    "__pycache__/**/*",
+    "logs/*",
+    "logs/**/*",
+    "uploads/*",
+    "uploads/**/*",
+    ".git/*",
+    ".git/**/*"
+]

@@ -1,0 +1,35 @@
+# Base image for WhisprMate: Python 3.11-slim + system deps + uv
+
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    DEBIAN_FRONTEND=noninteractive
+
+WORKDIR /app
+
+# Install system dependencies and uv, then clean up
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    libsndfile1 \
+    libsox-fmt-all \
+    sox \
+    git \
+    curl \
+    gosu \
+    gcc \
+    g++ \
+    make \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean \
+    && curl -LsSf https://astral.sh/uv/install.sh | sh \
+    && cp /root/.local/bin/uv /usr/local/bin/ \
+    && cp /root/.local/bin/uvx /usr/local/bin/ \
+    && apt-get purge -y --auto-remove gcc g++ make
+
+# Optionally create a non-root user for downstream images
+RUN useradd --create-home --shell /bin/bash app
+
+# Entrypoint and CMD are left to the child image

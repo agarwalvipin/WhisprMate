@@ -2,6 +2,9 @@
 streamlit>=1.28.0
 soundfile>=0.12.1
 
+# Audio processing dependencies
+soundfile>=0.12.1
+
 # Optional dependencies for enhanced functionality
 python-dotenv>=1.0.0
 

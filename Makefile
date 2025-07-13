@@ -23,3 +23,6 @@ test-docker:
 
 test-local:
 	./test_app.sh
+
+push-base:
+	docker push agarwalvipin/whisprmate-base:latest

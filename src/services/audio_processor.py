@@ -127,6 +127,8 @@ class AudioProcessorService(AudioProcessorInterface):
 
         try:
             cmd = [
+                "uv",
+                "run",
                 "python",
                 self.diarize_script_path,
                 audio_path,
@@ -156,12 +158,18 @@ class AudioProcessorService(AudioProcessorInterface):
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
             logger.info("Diarization command completed successfully")
             logger.debug(f"Command output: {result.stdout}")
+            if result.stderr:
+                logger.debug(f"Command stderr: {result.stderr}")
             return True, result.stdout
 
         except subprocess.CalledProcessError as e:
             logger.error(f"Diarization command failed with exit code {e.returncode}")
             logger.error(f"Command stderr: {e.stderr}")
+            logger.error(f"Command stdout: {e.stdout}")
             return False, e.stderr
+        except Exception as e:
+            logger.error(f"Unexpected error running diarization: {str(e)}")
+            return False, str(e)
 
     def _parse_srt_file(self, srt_path: Path):
         """Parse SRT file and return list of transcription segments.
