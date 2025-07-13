@@ -1,11 +1,11 @@
 version: '3.8'
 
 services:
-  speaker-diarization-app:
+  whisprmate:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: speaker-diarization-app
+    container_name: whisprmate
     ports:
       - "8501:8501"
     environment:
@@ -43,28 +43,10 @@ services:
       retries: 3
       start_period: 60s
 
-  # Optional: Add a reverse proxy for production deployments
-  nginx:
-    image: nginx:alpine
-    container_name: speaker-diarization-nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    # Add SSL certificates if needed
-    # - ./ssl:/etc/nginx/ssl:ro
-    depends_on:
-      - speaker-diarization-app
-    restart: unless-stopped
-    networks:
-      - speaker-diarization-network
-    profiles:
-      - production
-
 networks:
-  speaker-diarization-network:
-    driver: bridge
+  main_network:
+    external: true
+    name: main_network
 
 volumes:
   uploads_data:

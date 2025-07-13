@@ -92,22 +92,22 @@ docker-compose up -d
 
 ```bash
 # Build
-docker build -t speaker-diarization-app .
+docker build -t whisprmate .
 
 # Run with volumes
 docker run -d \
-  --name speaker-diarization-app \
+  --name whisprmate \
   -p 8501:8501 \
   -v $(pwd)/uploads:/app/uploads \
   -v $(pwd)/data:/app/data \
-  speaker-diarization-app
+  whisprmate
 
 # View logs
-docker logs speaker-diarization-app
+docker logs whisprmate
 
 # Stop and cleanup
-docker stop speaker-diarization-app
-docker rm speaker-diarization-app
+docker stop whisprmate
+docker rm whisprmate
 ```
 
 ### 📋 Container Specifications
