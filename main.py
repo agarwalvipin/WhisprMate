@@ -20,7 +20,7 @@ setup_logging(log_level=os.getenv("LOG_LEVEL", "INFO"), log_file=os.getenv("LOG_
 logger = get_logger("main")
 
 
-class SpeakerDiarizationApp:
+class WhisprMateApp:
     """Main application class following SOLID principles."""
 
     def __init__(self, default_username: str = "admin", default_password: str = "admin"):
@@ -30,7 +30,7 @@ class SpeakerDiarizationApp:
             default_username: Default username for authentication
             default_password: Default password for authentication
         """
-        logger.info("Initializing SpeakerDiarizationApp")
+        logger.info("Initializing WhisprMateApp")
         logger.debug(f"Default credentials: username={default_username}")
 
         # Initialize services (Dependency Injection)
@@ -52,12 +52,18 @@ class SpeakerDiarizationApp:
 
         # Initialize session state
         self._init_session_state()
-        logger.info("SpeakerDiarizationApp initialization completed")
+        logger.info("WhisprMateApp initialization completed")
 
     def _init_session_state(self) -> None:
         """Initialize Streamlit session state."""
         if "current_page" not in st.session_state:
             st.session_state.current_page = "dashboard"
+
+        # Initialize authentication state if not present
+        if "authenticated" not in st.session_state:
+            st.session_state.authenticated = False
+        if "username" not in st.session_state:
+            st.session_state.username = None
 
     def run(self) -> None:
         """Run the main application."""
@@ -74,6 +80,9 @@ class SpeakerDiarizationApp:
 
         # Apply custom CSS
         st.markdown(UIConfig.MAIN_HEADER_CSS, unsafe_allow_html=True)
+
+        # Ensure session state is properly initialized before auth check
+        self._init_session_state()
 
         # Check authentication
         logger.debug("Checking authentication")
@@ -671,7 +680,10 @@ def main():
     logger.info(f"Starting app with username: {args.username}")
 
     try:
-        app = SpeakerDiarizationApp(default_username=args.username, default_password=args.password)
+        # Use environment variables if set, otherwise fallback to CLI args or defaults
+        username = os.environ.get("STREAMLIT_USERNAME", args.username)
+        password = os.environ.get("STREAMLIT_PASSWORD", args.password)
+        app = WhisprMateApp(default_username=username, default_password=password)
         app.run()
     except Exception as e:
         logger.exception(f"Fatal error in main application: {str(e)}")

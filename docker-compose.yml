@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   whisprmate:
     build:
@@ -10,8 +8,8 @@ services:
       - "8501:8501"
     environment:
       # Default authentication credentials (can be overridden)
-      - STREAMLIT_USERNAME=admin
-      - STREAMLIT_PASSWORD=admin
+      - STREAMLIT_USERNAME=${STREAMLIT_USERNAME}
+      - STREAMLIT_PASSWORD=${STREAMLIT_PASSWORD}
       # HuggingFace token for speaker diarization (set in .env or override here)
       - HF_TOKEN=${HF_TOKEN:-}
       # Uploads directory configuration
@@ -35,7 +33,7 @@ services:
       - ./.env:/app/.env:ro
     restart: unless-stopped
     networks:
-      - speaker-diarization-network
+      - main_network
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8501/_stcore/health || exit 1"]
       interval: 30s

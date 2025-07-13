@@ -36,24 +36,17 @@ class AuthComponent:
                 return True
             else:
                 st.info("🔒 Please log in to continue.")
-                
-                # Show default credentials info
-                with st.expander("ℹ️ Default Credentials"):
-                    st.text(f"Username: {self.auth_service.default_username}")
-                    st.text(f"Password: {self.auth_service.default_password}")
+
+                # Show generic login info
+                with st.expander("ℹ️ Login Information"):
+                    st.info("Use your configured credentials to log in.")
 
                 with st.form("login_form"):
-                    username = st.text_input(
-                        "Username", 
-                        placeholder=self.auth_service.default_username
-                    )
+                    username = st.text_input("Username", placeholder="Enter username")
                     password = st.text_input(
-                        "Password", 
-                        type="password", 
-                        placeholder=self.auth_service.default_password
+                        "Password", type="password", placeholder="Enter password"
                     )
                     submitted = st.form_submit_button("🔑 Login")
-                    use_defaults = st.form_submit_button("🔑 Use Defaults")
 
                     if submitted:
                         if self.auth_service.login(username, password):
@@ -61,16 +54,6 @@ class AuthComponent:
                             st.rerun()
                         else:
                             st.error("Invalid credentials")
-                    
-                    elif use_defaults:
-                        if self.auth_service.login(
-                            self.auth_service.default_username,
-                            self.auth_service.default_password
-                        ):
-                            st.success("Login successful!")
-                            st.rerun()
-                        else:
-                            st.error("Default credentials failed!")
 
                 return False
 
@@ -105,32 +88,25 @@ class AuthComponent:
 
                 with st.form("main_login_form"):
                     st.markdown("#### Enter your credentials")
-                    
-                    # Show default credentials info
-                    with st.expander("ℹ️ Default Credentials", expanded=False):
-                        st.info(f"""
-                        **Default Username:** `{self.auth_service.default_username}`  
-                        **Default Password:** `{self.auth_service.default_password}`
+
+                    # Show generic login info
+                    with st.expander("ℹ️ Login Information", expanded=False):
+                        st.info("""
+                        Enter your configured username and password to access the application.
                         
-                        You can change these defaults by running the app with:  
-                        `streamlit run main.py -- --username YOUR_USERNAME --password YOUR_PASSWORD`
+                        **Note:** Credentials can be configured when starting the application.
                         """)
-                    
+
                     username = st.text_input(
-                        "👤 Username", 
-                        placeholder=f"Enter username (default: {self.auth_service.default_username})"
+                        "👤 Username", placeholder="Enter username"
                     )
                     password = st.text_input(
-                        "🔒 Password", 
-                        type="password", 
-                        placeholder=f"Enter password (default: {self.auth_service.default_password})"
+                        "🔒 Password", type="password", placeholder="Enter password"
                     )
 
-                    col_btn1, col_btn2 = st.columns(2)
-                    with col_btn1:
-                        submitted = st.form_submit_button("🔑 Login", use_container_width=True)
-                    with col_btn2:
-                        use_defaults = st.form_submit_button("� Use Defaults", use_container_width=True)
+                    submitted = st.form_submit_button(
+                        "🔑 Login", use_container_width=True
+                    )
 
                     if submitted:
                         if self.auth_service.login(username, password):
@@ -138,17 +114,6 @@ class AuthComponent:
                             st.rerun()
                         else:
                             st.error("Invalid credentials. Please try again.")
-
-                    elif use_defaults:
-                        # Use default credentials
-                        if self.auth_service.login(
-                            self.auth_service.default_username, 
-                            self.auth_service.default_password
-                        ):
-                            st.success("Logged in with default credentials!")
-                            st.rerun()
-                        else:
-                            st.error("Default credentials failed!")
 
                 st.markdown("</div>", unsafe_allow_html=True)
 

@@ -21,6 +21,60 @@ For accurate speaker diarization, you need a HuggingFace token:
 
 **Note**: Without a token, the application will automatically use simulation mode for demonstration purposes.
 
+## ⚙️ Installation
+
+### Method 1: Using uv (Recommended)
+
+[uv](https://github.com/astral-sh/uv) is a fast Python package manager. If you have `uv` installed:
+
+```bash
+# Clone the repository
+git clone https://github.com/agarwalvipin/WhisprMate.git
+cd WhisprMate
+
+# Create virtual environment and install dependencies
+uv venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+uv pip install -r requirements.txt
+
+# Run the application
+./run_app.sh
+# Or manually:
+python -m streamlit run main.py
+```
+
+### Method 2: Using pip
+
+```bash
+# Clone the repository
+git clone https://github.com/agarwalvipin/WhisprMate.git
+cd WhisprMate
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the application
+python -m streamlit run main.py
+```
+
+### Method 3: Using Poetry
+
+```bash
+# Clone the repository
+git clone https://github.com/agarwalvipin/WhisprMate.git
+cd WhisprMate
+
+# Install dependencies with Poetry
+poetry install
+
+# Run the application
+poetry run streamlit run main.py
+```
+
 ## �🚀 Quick Start
 
 ### Option 1: Web Interface (Streamlit)

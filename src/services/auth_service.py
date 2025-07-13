@@ -28,10 +28,23 @@ class AuthenticationService(AuthenticationInterface):
         self.enable_auth = enable_auth
         self.default_username = default_username
         self.default_password = default_password
-        logger.info(
-            f"AuthenticationService initialized: enabled={enable_auth}, username={default_username}"
-        )
+        logger.info(f"AuthenticationService initialized: enabled={enable_auth}")
         logger.debug(f"Authentication settings: enable_auth={enable_auth}")
+
+        # Initialize session state for authentication
+        self._init_session_state()
+
+    def _init_session_state(self) -> None:
+        """Initialize authentication session state."""
+        if "authenticated" not in st.session_state:
+            st.session_state.authenticated = False
+        if "username" not in st.session_state:
+            st.session_state.username = None
+        if "session_id" not in st.session_state:
+            import uuid
+
+            st.session_state.session_id = str(uuid.uuid4())
+            logger.debug(f"New session initialized: {st.session_state.session_id}")
 
     def is_authenticated(self) -> bool:
         """Check if user is authenticated.
@@ -42,7 +55,21 @@ class AuthenticationService(AuthenticationInterface):
         if not self.enable_auth:
             return True
 
-        return st.session_state.get("authenticated", False)
+        # Ensure session state is initialized
+        self._init_session_state()
+
+        # Check authentication status
+        is_auth = st.session_state.get("authenticated", False)
+        username = st.session_state.get("username")
+
+        if is_auth and username:
+            logger.debug(
+                f"User {username} is authenticated (session: {st.session_state.get('session_id', 'unknown')})"
+            )
+            return True
+
+        logger.debug("User is not authenticated")
+        return False
 
     def login(self, username: str, password: str) -> bool:
         """Authenticate user.
@@ -55,6 +82,9 @@ class AuthenticationService(AuthenticationInterface):
             True if login successful
         """
         logger.debug(f"Login attempt for username: {username}")
+
+        # Ensure session state is initialized
+        self._init_session_state()
 
         # Simple demo authentication - in production, use proper auth
         if not self.enable_auth:
@@ -75,9 +105,9 @@ class AuthenticationService(AuthenticationInterface):
 
     def logout(self) -> None:
         """Log out user."""
+        logger.info(f"User {st.session_state.get('username', 'unknown')} logging out")
         st.session_state["authenticated"] = False
-        if "username" in st.session_state:
-            del st.session_state["username"]
+        st.session_state["username"] = None
 
     def require_auth(self) -> bool:
         """Check if authentication is required and user is authenticated.

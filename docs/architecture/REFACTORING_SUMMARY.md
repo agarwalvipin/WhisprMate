@@ -174,7 +174,7 @@ def test_file_manager():
 # Example: Test with mocked services
 def test_app_with_mocks():
     mock_processor = MockAudioProcessor()
-    app = SpeakerDiarizationApp()
+    app = WhisprMateApp()
     app.audio_processor = mock_processor
     # Test logic without actual processing
 ```
